@@ -20,8 +20,10 @@ export const FIREBASE_CONFIG = {
   storageBucket: "undefined-list.firebasestorage.app",
   messagingSenderId: "264152148253",
   appId: "1:264152148253:web:8a89550f77ceb31464d9f4"
+};
 
 export const ALLOWED_EMAILS = [
   "quidpromoh@gmail.com",
+  "mnoroozi@lakeheadu.ca",
   "mcgibbonkim@gmail.com"
 ];
