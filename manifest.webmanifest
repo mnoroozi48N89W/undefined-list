@@ -1,0 +1,16 @@
+{
+  "name": "The Undefined List",
+  "short_name": "Undefined",
+  "description": "A shared list of things to do, kept by two people who cannot agree on what to call themselves.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#16211C",
+  "theme_color": "#16211C",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
