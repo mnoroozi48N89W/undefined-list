@@ -421,15 +421,27 @@ nav{
 /* ---------- sign-in gate ---------- */
 #gate{display:flex;flex-direction:column;align-items:flex-start;gap:17px;padding:22px 0 48px;max-width:36ch}
 #gate .lede{font-family:var(--f-body);font-size:17.5px;line-height:1.52;color:var(--ink-2);margin:0}
-#gate .signin{
+#gate .signin, .bigbtn{
   display:inline-flex;align-items:center;gap:10px;
   font-family:var(--f-display);font-size:16px;font-weight:700;letter-spacing:-.01em;
   padding:14px 20px;border-radius:10px;border:0;cursor:pointer;
   background:var(--claret);color:var(--on-claret);box-shadow:var(--shadow);
 }
-#gate .signin:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-#gate .signin:active{transform:translateY(1px)}
+#gate .signin:focus-visible, .bigbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+#gate .signin:active, .bigbtn:active{transform:translateY(1px)}
 #gate .signin[disabled]{opacity:.55;cursor:default}
+
+/* ---------- door policy ---------- */
+#doorman{display:flex;flex-direction:column;align-items:flex-start;gap:21px;padding:30px 0 56px;max-width:30ch}
+.door-eyebrow{
+  font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cable);margin:0;
+}
+.door-phrase{
+  font-family:var(--f-display);font-optical-sizing:auto;
+  font-size:clamp(26px,7.2vw,37px);font-weight:800;letter-spacing:-.025em;line-height:1.1;
+  margin:0;color:var(--ink);text-wrap:balance;
+}
 #gate .fineprint{font-family:var(--f-mono);font-size:11px;line-height:1.7;color:var(--ink-3);margin:0}
 #gate .err{
   font-family:var(--f-mono);font-size:11.5px;line-height:1.6;margin:0;
@@ -464,6 +476,12 @@ nav{
       <span id="account"><button class="linkish" id="signOut" type="button" hidden>sign out</button></span>
     </p>
   </header>
+
+  <section id="doorman" hidden>
+    <p class="door-eyebrow">Door policy</p>
+    <p class="door-phrase" id="doorPhrase"></p>
+    <button class="bigbtn" id="doorContinue" type="button">Continue</button>
+  </section>
 
   <section id="gate" hidden>
     <p class="lede">Two of you, one list. Sign in and it's the same list on both phones.</p>
@@ -1030,21 +1048,67 @@ var signOutBtn = document.getElementById("signOut");
 var acctSep    = document.getElementById("acctSep");
 var gateErr    = document.getElementById("gateErr");
 
-function showGate(msg){
-  document.body.classList.add("gated");
-  appMain.hidden = true;
-  gate.hidden = false;
-  signOutBtn.hidden = true;
-  acctSep.hidden = true;
-  if(msg){ gateErr.hidden = false; gateErr.textContent = msg; }
-  else{ gateErr.hidden = true; }
+/* ---------------- the door policy ----------------
+   Every opening puts one condition of entry between you and the list.
+   Nothing is enforced; it just has to be read. ---------------- */
+var doorman = document.getElementById("doorman");
+var DOOR_POLICIES = [
+  "Only Slimy Mushrooms allowed",
+  "Must have seen all three movies of the Before series",
+  "Es-tu Le F***ing Mastermind?",
+  "How many dioramas have you made lately?",
+  "How big of a fire cracker are you?"
+];
+
+function pickPolicy(){
+  var last = "";
+  try{ last = localStorage.getItem("ul-door") || ""; }catch(e){}
+  var pool = DOOR_POLICIES.filter(function(p){ return p !== last; });
+  if(!pool.length) pool = DOOR_POLICIES;
+  var pick = pool[Math.floor(Math.random() * pool.length)];
+  try{ localStorage.setItem("ul-door", pick); }catch(e){}
+  return pick;
 }
-function showApp(){
-  document.body.classList.remove("gated");
-  gate.hidden = true;
-  appMain.hidden = false;
-  show("pick");
+
+/* The door opens once per load; `desired` is where we go when it does,
+   which auth may well have decided while the policy was still up. */
+var doorOpen = false;
+var desired  = "gate";
+var gateMsg  = null;
+
+function paintView(){
+  if(!doorOpen){
+    doorman.hidden = false;
+    gate.hidden = true;
+    appMain.hidden = true;
+    document.body.classList.add("gated");
+    return;
+  }
+  doorman.hidden = true;
+  if(desired === "app"){
+    document.body.classList.remove("gated");
+    gate.hidden = true;
+    appMain.hidden = false;
+    show("pick");
+  }else{
+    document.body.classList.add("gated");
+    appMain.hidden = true;
+    gate.hidden = false;
+    signOutBtn.hidden = true;
+    acctSep.hidden = true;
+    if(gateMsg){ gateErr.hidden = false; gateErr.textContent = gateMsg; }
+    else{ gateErr.hidden = true; }
+  }
 }
+function showGate(msg){ desired = "gate"; gateMsg = msg || null; paintView(); }
+function showApp(){ desired = "app"; paintView(); }
+
+document.getElementById("doorPhrase").textContent = pickPolicy();
+document.getElementById("doorContinue").addEventListener("click", function(){
+  doorOpen = true;
+  paintView();
+});
+paintView();
 function banner(text){
   if(document.getElementById("banner")) return;
   var p = document.createElement("p");
